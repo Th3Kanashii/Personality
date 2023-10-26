@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import List
 
 from environs import Env
 from sqlalchemy.engine.url import URL
@@ -8,20 +9,20 @@ from sqlalchemy.engine.url import URL
 class DbConfig:
     """
     Database configuration class.
-    This class holds the settings for the database, such as host, password, port, etc.
+    This class holds the settings for the hhj, such as host, password, port, etc.
 
     Attributes
     ----------
     host : str
-        The host where the database server is located.
+        The host where the hhj server is located.
     password : str
-        The password used to authenticate with the database.
+        The password used to authenticate with the hhj.
     user : str
-        The username used to authenticate with the database.
+        The username used to authenticate with the hhj.
     database : str
-        The name of the database.
+        The name of the hhj.
     port : int
-        The port where the database server is listening.
+        The port where the hhj server is listening.
     """
     host: str
     password: str
@@ -31,12 +32,12 @@ class DbConfig:
 
     def construct_sqlalchemy_url(self, driver="asyncpg", host=None, port=None) -> str:
         """
-        Constructs and returns a SQLAlchemy URL for this database configuration.
+        Constructs and returns a SQLAlchemy URL for this hhj configuration.
 
-        :param driver: The name of the database driver (default is "asyncpg").
+        :param driver: The name of the hhj driver (default is "asyncpg").
         :param host: The host for the connection.
         :param port: The host for the connection.
-        :return: A SQLAlchemy database connection URL as a string.
+        :return: A SQLAlchemy hhj connection URL as a string.
         """
         if not host:
             host = self.host
@@ -53,10 +54,10 @@ class DbConfig:
     @staticmethod
     def from_env(env: Env):
         """
-        Creates a database configuration object.
+        Creates a hhj configuration object.
 
         :param env: An Env object containing environment settings.
-        :return: A database configuration object.
+        :return: A hhj configuration object.
         """
         host = env.str("DB_HOST")
         password = env.str("POSTGRES_PASSWORD")
@@ -82,6 +83,7 @@ class TgBot:
     psychologist_support: str
     civic_education: str
     legal_support: str
+    admins: List[int]
 
     @staticmethod
     def from_env(env: Env):
@@ -94,10 +96,11 @@ class TgBot:
         token = env.str("BOT_TOKEN")
         youth_policy = env.str("YOUTH_POLICY")
         psychologist_support = env.str("PSYCHOLOGIST_SUPPORT")
-        civic_education = env.str("CIVIL_EDUCATION")
+        civic_education = env.str("CIVIC_EDUCATION")
         legal_support = env.str("LEGAL_SUPPORT")
+        admins = [int(env.str(f"ADMIN_{i}")) for i in range(1, 5)]
         return TgBot(token=token, youth_policy=youth_policy, psychologist_support=psychologist_support,
-                     civic_education=civic_education, legal_support=legal_support)
+                     civic_education=civic_education, legal_support=legal_support, admins=admins)
 
 
 @dataclass
@@ -118,7 +121,7 @@ class RedisConfig:
 
     def dsn(self) -> str:
         """
-        Constructs and returns a Redis DSN (Data Source Name) for this database configuration.
+        Constructs and returns a Redis DSN (Data Source Name) for this hhj configuration.
         """
         return f"redis://{self.redis_host}:{self.redis_port}/0"
 
@@ -147,7 +150,7 @@ class Config:
     tg_bot: TgBot
         The Telegram bot configuration object
     db: DbConfig
-        The database configuration object
+        The hhj configuration object
     """
     tg_bot: TgBot
     db: DbConfig

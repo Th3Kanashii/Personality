@@ -1,27 +1,28 @@
-import openpyxl
 import os
+import openpyxl
 
 from aiogram import types, Router
 from aiogram.filters import Command
 
-from bot.database import DataAccessObject
+from bot.database import RequestsRepo
 
 router = Router()
 
 
 @router.message(Command(commands=["db"]))
 async def get_db(message: types.Message,
-                 dao: DataAccessObject) -> None:
+                 repo: RequestsRepo) -> None:
     """
+    Handler to /db commands.
+    Generates a database report in the form of an Excel file and sends it.
 
-
-    :param message:
-    :param dao:
+    :param message: The message from Telegram.
+    :param repo: The repository for database requests.
     """
     headers = ["ID", "Ім'я", "Прізвище", "Ім'я користувача", "Молодіжна політика", "Психологічна підтримка",
                "Громадянська освіта", "Юридична підтримка"]
 
-    data = await dao.get_all_users()
+    data = await repo.users.get_all_users()
 
     workbook = openpyxl.Workbook()
     sheet = workbook.active
@@ -40,9 +41,9 @@ async def get_db(message: types.Message,
     category_percentages = [round((count / subscription_count) * 100, 1) if subscription_count > 0 else 0 for count in
                             category_counts]
 
-    workbook.save('users.xlsx')
-    file_data = types.FSInputFile(path='users.xlsx',
-                                  filename='users.xlsx')
+    workbook.save("users.xlsx")
+    file_data = types.FSInputFile(path="users.xlsx",
+                                  filename="users.xlsx")
 
     response_text = (
         f"Кількість користувачів у боті - {users}\n"

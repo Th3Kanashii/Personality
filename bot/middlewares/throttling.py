@@ -1,6 +1,6 @@
-from typing import Callable, Awaitable, Dict, Any
-from cachetools import TTLCache
 from datetime import datetime
+from typing import Callable, Awaitable, Dict, Any
+from cachetools import LRUCache
 
 from aiogram import BaseMiddleware
 from aiogram.types import Message
@@ -9,7 +9,7 @@ from aiogram.types import Message
 class ThrottlingMiddleware(BaseMiddleware):
     def __init__(self, limit: float = 0.8) -> None:
         self.limit = limit
-        self.cache = TTLCache(maxsize=20, ttl=900)
+        self.cache = LRUCache(maxsize=30)
 
     async def __call__(self,
                        handler: Callable[[Message, Dict[str, Any]], Awaitable[Any]],

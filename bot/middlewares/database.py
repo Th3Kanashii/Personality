@@ -4,7 +4,7 @@ from aiogram import BaseMiddleware
 from aiogram.types import TelegramObject
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 
-from bot.database import DataAccessObject
+from bot.database import RequestsRepo
 
 
 class DatabaseMiddleware(BaseMiddleware):
@@ -18,5 +18,5 @@ class DatabaseMiddleware(BaseMiddleware):
                        data: Dict[str, Any]) -> Any:
         session: AsyncSession
         async with self.session_pool() as session:
-            data["dao"] = DataAccessObject(session)
+            data["repo"] = RequestsRepo(session)
             return await handler(event, data)

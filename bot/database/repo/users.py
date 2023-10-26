@@ -1,15 +1,12 @@
 from typing import Optional, List
 
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from bot.database import User
+from bot.database.repo.base import BaseRepo
 
 
-class DataAccessObject:
-    def __init__(self, session: AsyncSession) -> None:
-        self.session: AsyncSession = session
-
+class UserRepo(BaseRepo):
     async def get_user(self, user_id: int) -> Optional[User]:
         """
         Retrieves a user from the database by their ID.
@@ -61,6 +58,7 @@ class DataAccessObject:
             "Юридична підтримка": "legal_support",
         }
         user = await self.get_user(user_id)
+        # print(user.topics.)
 
         if cancel:
             setattr(user, user.active_category, False)
@@ -100,7 +98,7 @@ class DataAccessObject:
         :param user_id: The Telegram user ID.
         :param topic_id: The ID of the topic related to the user.
         """
-        user = await self.get_user(user_id)
+        user = await self.get_user(user_id=user_id)
         setattr(user, f"{user.active_category}_topic", topic_id)
         await self.session.commit()
 
@@ -127,18 +125,3 @@ class DataAccessObject:
         user_data = [(user.user_id, user.first_name, user.last_name, user.username, user.youth_policy,
                       user.psychologist_support, user.civic_education, user.legal_support) for user in users.scalars()]
         return user_data
-
-    async def ban_user(self,
-                       topic_id: int,
-                       category: str) -> None:
-        """
-        Ban a user associated with a specific topic ID and category.
-
-        :param topic_id: The ID of the topic related to the user.
-        :param category: The category associated with the user.
-        """
-        user_id = await self.get_user_id_by_topic(topic_id=topic_id,
-                                                  category=category)
-        user = await self.get_user(user_id)
-        user.ban = True
-        await self.session.commit()

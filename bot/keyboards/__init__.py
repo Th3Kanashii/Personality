@@ -1,5 +1,5 @@
-from .inline import url_subscription, cancel_scheduler
-from .reply import start, cancel_subscription, cancel_notification
+from .inline import url_subscription, cancel_scheduler, cancel_notification
+from .reply import start, cancel_subscription
 
 __all__ = [
     "start",

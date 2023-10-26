@@ -1,9 +1,10 @@
-from .base import Base
-from .models import User
-from .dao import DataAccessObject
+from .models import Base, User
+from .repo import BaseRepo, RequestsRepo, UserRepo
 
 __all__ = [
     "Base",
     "User",
-    "DataAccessObject"
+    "BaseRepo",
+    "RequestsRepo",
+    "UserRepo",
 ]

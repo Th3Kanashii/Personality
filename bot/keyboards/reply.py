@@ -19,7 +19,6 @@ def start(subscriptions: list) -> ReplyKeyboardMarkup:
         else:
             keyboard.row(KeyboardButton(text=category))
 
-    keyboard.adjust(2)
     return keyboard.as_markup(resize_keyboard=True)
 
 
@@ -32,23 +31,6 @@ def cancel_subscription() -> ReplyKeyboardMarkup:
     keyboard = ReplyKeyboardBuilder()
     keyboard.row(KeyboardButton(text="Скасувати підписку ❌"),
                  KeyboardButton(text="Головне меню 📌"))
-
-    keyboard.adjust(2)
-    return keyboard.as_markup(resize_keyboard=True)
-
-
-def cancel_notification(back: bool = False) -> ReplyKeyboardMarkup:
-    """
-
-    :return:
-    """
-    keyboard = ReplyKeyboardBuilder()
-    if back:
-        keyboard.row(KeyboardButton(text="Назад 🔙"),
-                     KeyboardButton(text="Скасувати ❌"))
-    else:
-        keyboard.row(KeyboardButton(text="Пропустити ⏭️"),
-                     KeyboardButton(text="Скасувати ❌"))
 
     keyboard.adjust(2)
     return keyboard.as_markup(resize_keyboard=True)
