@@ -22,12 +22,12 @@ class TopicMiddleware(BaseMiddleware):
         :param message: The message from Telegram.
         :param repo: The repository for database requests.
         """
-        topic_id = await bot.create_forum_topic(chat_id=chat_id,
-                                                name=message.from_user.first_name)
         await message.answer(text="Привіт! Наш спеціаліст-волонтер радо відповість на всі запитання в час від 13:00 - "
                                   "14:00 або з 19:00 - 20:00. Не хвилюйся, ми додамо максимум зусиль та знань, "
                                   "щоб проконсультувати тебе якісно.",
                              reply_markup=cancel_subscription())
+        topic_id = await bot.create_forum_topic(chat_id=chat_id,
+                                                name=message.from_user.first_name)
         await bot.send_message(chat_id=chat_id,
                                text=f"Чат з користувачем {hlink(message.from_user.first_name, message.from_user.url)}"
                                     f" (@{message.from_user.username}) створено!",
