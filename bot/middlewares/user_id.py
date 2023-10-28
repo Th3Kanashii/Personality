@@ -18,18 +18,19 @@ class UserIdMiddleware(BaseMiddleware):
                        data: Dict[str, Any]) -> Any:
         repo: RequestsRepo = data["repo"]
 
+        categories = {
+            "Особистість / Молодіжна політика": ["youth_policy", "Молодіжна політика 📚:"],
+            "Особистість / Підтримка психолога": ["psychologist_support", "Підтримка психолога 🧘:"],
+            "Особистість / Юридична підтримка": ["legal_support", "Юридична підтримка ⚖️:"]
+        }
         key = f"{event.chat.id}_{event.message_thread_id}"
         user_id = self.cache.get(key)
 
         if not user_id:
-            categories = {
-                "Особистість / Молодіжна політика": "youth_policy",
-                "Особистість / Підтримка психолога": "psychologist_support",
-                "Особистість / Юридична підтримка": "legal_support"
-            }
             user_id = await repo.users.get_user_id_by_topic(topic_id=event.message_thread_id,
-                                                            category=categories.get(event.chat.title))
+                                                            category=categories.get(event.chat.title)[0])
             self.cache[key] = user_id
 
         data["user_id"] = user_id
+        data["category"] = categories.get(event.chat.title)[1]
         return await handler(event, data)
