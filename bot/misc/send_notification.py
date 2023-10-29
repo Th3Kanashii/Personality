@@ -39,12 +39,12 @@ async def send_notification(message: types.Message,
         except TelegramForbiddenError:
             continue
 
-    with open("/home/kanashii/Projects/Personality/notification.json", "r", encoding="utf-8") as json_file:
+    with open("/root/Personality/data.json", "r", encoding="utf-8") as json_file:
         token_message_mapping = json.load(json_file)
 
     token_message_mapping[notification_token] = [message.text, category, user_ids]
 
-    with open("/home/kanashii/Projects/Personality/notification.json", "w", encoding="utf-8") as json_file:
+    with open("/root/Personality/data.json", "w", encoding="utf-8") as json_file:
         json.dump(token_message_mapping, json_file, ensure_ascii=False, indent=4)
 
     if scheduler:

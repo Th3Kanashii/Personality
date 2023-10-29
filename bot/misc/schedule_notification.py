@@ -22,7 +22,7 @@ async def schedule_notification(bot: Bot,
         repo = RequestsRepo(session)
         users = await repo.users.get_all_users()
 
-    json_file_path = "/home/kanashii/Projects/Personality/notification.json"
+    json_file_path = "/root/Personality/data.json"
     with open(json_file_path, "r", encoding="utf-8") as json_file:
         message = json.load(json_file)
 
