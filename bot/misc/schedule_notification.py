@@ -1,9 +1,11 @@
 import json
 import asyncio
 
-from typing import List
+from typing import List, Set
 
 from aiogram import Bot
+from aiogram.exceptions import TelegramForbiddenError
+
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from bot.database import RequestsRepo
@@ -26,18 +28,20 @@ async def schedule_notification(bot: Bot,
     with open(json_file_path, "r", encoding="utf-8") as json_file:
         message = json.load(json_file)
 
-    ids = set()
+    ids: Set = set()
     user_ids: List[int] = []
 
     for key, value in message.items():
         for user in users:
-            user_id, user_field = user[0], user[value[1]]
-            if user_id not in value[2] and user_field and user_id not in ids:
-                await bot.send_message(chat_id=user_id, text=value[0])
-                ids.add(user_id)
-                user_ids.append(user_id)
-                await asyncio.sleep(0.01)
-
+            try:
+                user_id, user_field = user[0], user[value[1]]
+                if user_id not in value[2] and user_field and user_id not in ids:
+                    await bot.send_message(chat_id=user_id, text=value[0])
+                    ids.add(user_id)
+                    user_ids.append(user_id)
+                    await asyncio.sleep(0.01)
+            except TelegramForbiddenError:
+                continue
         message[key] = [value[0], value[1], value[2] + user_ids]
         user_ids.clear()
 
