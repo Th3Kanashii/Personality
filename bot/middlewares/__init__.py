@@ -1,10 +1,11 @@
-from .database import DatabaseMiddleware
-from .register_user import RegisterUserMiddleware
-from .topic import TopicMiddleware
 from .config import ConfigMiddleware
-from .user_id import UserIdMiddleware
+from .database import DatabaseMiddleware
 from .media_group import MediaGroupMiddleware
+from .register_user import RegisterUserMiddleware
+from .scheduler import SchedulerMiddleware
 from .throttling import ThrottlingMiddleware
+from .topic import TopicMiddleware
+from .user_id import UserIdMiddleware
 
 __all__ = [
     "DatabaseMiddleware",
@@ -13,5 +14,6 @@ __all__ = [
     "ConfigMiddleware",
     "UserIdMiddleware",
     "MediaGroupMiddleware",
-    "ThrottlingMiddleware"
+    "ThrottlingMiddleware",
+    "SchedulerMiddleware",
 ]

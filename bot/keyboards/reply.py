@@ -1,4 +1,4 @@
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
 
 
@@ -11,11 +11,18 @@ def start(subscriptions: list) -> ReplyKeyboardMarkup:
              Subscribed categories are marked with a checkmark (✅).
     """
     keyboard = ReplyKeyboardBuilder()
-    categories = ["Молодіжна політика 📚", "Підтримка психолога 🧘", "Громадянська освіта 🏛",
-                  "Юридична підтримка ⚖️", "Жива бібліотека 📖"]
+    categories = [
+        "Молодіжна політика 📚",
+        "Підтримка психолога 🧘",
+        "Громадянська освіта 🏛",
+        "Юридична підтримка ⚖️",
+        "Жива бібліотека 📖",
+    ]
     for category in categories:
         if category in subscriptions:
-            keyboard.row(KeyboardButton(text=category.replace(category.split()[-1], "✅")))
+            keyboard.row(
+                KeyboardButton(text=category.replace(category.split()[-1], "✅"))
+            )
         else:
             keyboard.row(KeyboardButton(text=category))
 
@@ -29,8 +36,10 @@ def cancel_subscription() -> ReplyKeyboardMarkup:
     :return: A reply keyboard markup with options to cancel a subscription and return to the main menu.
     """
     keyboard = ReplyKeyboardBuilder()
-    keyboard.row(KeyboardButton(text="Скасувати підписку ❌"),
-                 KeyboardButton(text="Головне меню 📌"))
+    keyboard.row(
+        KeyboardButton(text="Скасувати підписку ❌"),
+        KeyboardButton(text="Головне меню 📌"),
+    )
 
     keyboard.adjust(2)
     return keyboard.as_markup(resize_keyboard=True)

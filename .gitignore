@@ -6,3 +6,5 @@ venv/
 migrations/
 *.ini
 *.json
+*.log
+*.pdf

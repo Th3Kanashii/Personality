@@ -1,6 +1,6 @@
-from aiogram.fsm.state import StatesGroup, State
+from aiogram.fsm.state import State, StatesGroup
 
 
 class States(StatesGroup):
-    notification = State()
-    notification_datetime = State()
+    post = State()
+    post_datetime = State()

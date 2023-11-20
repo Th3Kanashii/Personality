@@ -1,29 +1,26 @@
-from . import get_db
-from . import notification
-from . import help
-from . import from_forum
+from typing import List
 
-from bot.config import load_config
+from aiogram import Router
+
 from bot.filters import Admin
 from bot.middlewares import UserIdMiddleware
 
-config = load_config()
-admins = config.tg_bot.admins
+from . import from_forum, get_db, help, post
 
-get_db.router.message.filter(Admin(admins=admins))
-notification.router.message.filter(Admin(admins=admins))
-help.router.message.filter(Admin(admins=admins))
-from_forum.router.message.filter(Admin(admins=admins, command=False))
 
-from_forum.router.message.middleware(UserIdMiddleware())
+def get_admin_routers() -> List[Router]:
+    """_summary_
 
-routers_admin = [
-    get_db.router,
-    notification.router,
-    help.router,
-    from_forum.router
-]
+    Returns:
+        List[Router]: _description_
+    """
+    post.router.message.filter(Admin())
+    get_db.router.message.filter(Admin())
+    help.router.message.filter(Admin())
+    from_forum.router.message.filter(Admin(command=False))
 
-__all__ = [
-    "routers_admin"
-]
+    from_forum.router.message.middleware(UserIdMiddleware())
+    return [get_db.router, post.router, help.router, from_forum.router]
+
+
+__all__ = ["get_admin_routers"]

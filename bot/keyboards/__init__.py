@@ -1,10 +1,10 @@
-from .inline import url_subscription, cancel_scheduler, cancel_notification
-from .reply import start, cancel_subscription
+from .inline import cancel_post, cancel_scheduler, url_subscription
+from .reply import cancel_subscription, start
 
 __all__ = [
     "start",
     "url_subscription",
     "cancel_subscription",
-    "cancel_notification",
-    "cancel_scheduler"
+    "cancel_post",
+    "cancel_scheduler",
 ]

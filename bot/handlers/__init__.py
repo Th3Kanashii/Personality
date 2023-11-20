@@ -1,18 +1,21 @@
+from typing import List
+
 from aiogram import Router
 
-from .admin import routers_admin
-from .user import routers_user
+from .admin import get_admin_routers
+from .user import get_user_routers
 
 
-def get_router() -> Router:
-    main_router = Router()
-    routers = routers_user + routers_admin
-    for router in routers:
-        main_router.include_router(router)
+def get_routers() -> List[Router]:
+    """
 
-    return main_router
+    Returns:
+        List[Router]: _description_
+    """
+    admin_routers: List[Router] = get_admin_routers()
+    user_routers: List[Router] = get_user_routers()
+
+    return [*admin_routers, *user_routers]
 
 
-__all__ = [
-    "get_router"
-]
+__all__ = ["get_routers"]

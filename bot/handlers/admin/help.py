@@ -12,10 +12,12 @@ async def command_help(message: types.Message) -> None:
 
     :param message: The message from Telegram.
     """
-    await message.answer(text="Команда /db\nПрисилає базу даних у форматі *.xlsx\n\n"
-                              "Команда /notification\nРобить сповіщення всім підписникам\n"
-                              "Якщо виникли якісь труднощі, звертайтесь до розробника ;)\n\n"
-                              "Контакти: @Th3Kanashii, Ім'я: Kanashii\n"
-                              "GitHub: https://github.com/Th3Kanashii\n"
-                              "Посилання на проєкт:\n"
-                              "https://github.com/Th3Kanashii/Personality.git")
+    documentation = types.FSInputFile(path="README.pdf", filename="README.pdf")
+    await message.answer_document(
+        document=documentation,
+        caption="Отримання бази даних у форматі *.xlsx можливе за допомогою команди <b>/db</b>.\n\n"
+        "Для проведення масової розсилки повідомлень підписникам використовуйте команду <b>/post</b>, "
+        "що забезпечить швидку і зручну взаємодію з аудиторією.\n\n"
+        "Уся необхідна інформація, щодо особливостей та можливостей бота, детально описана в файлі <b>README.pdf</b>\n\n"
+        "<b>© 2023 Kanashii. Усі права захищено</b>",
+    )

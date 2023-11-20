@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import List, Optional
 
 from sqlalchemy import select
 
@@ -16,11 +16,9 @@ class UserRepo(BaseRepo):
         """
         return await self.session.get(User, user_id)
 
-    async def add_user(self,
-                       user_id: int,
-                       first_name: str,
-                       last_name: str,
-                       username: str) -> None:
+    async def add_user(
+        self, user_id: int, first_name: str, last_name: str, username: str
+    ) -> None:
         """
         Adds a user to the database or updates an existing user.
 
@@ -31,18 +29,22 @@ class UserRepo(BaseRepo):
         """
         user = await self.get_user(user_id)
         if not user:
-            user = User(user_id=user_id,
-                        first_name=first_name,
-                        last_name=last_name,
-                        username=username)
+            user = User(
+                user_id=user_id,
+                first_name=first_name,
+                last_name=last_name,
+                username=username,
+            )
             self.session.add(user)
             await self.session.commit()
 
-    async def update_user_subscription(self,
-                                       user_id: int,
-                                       category: str = None,
-                                       cancel: bool = False,
-                                       main_menu: bool = False) -> None:
+    async def update_user_subscription(
+        self,
+        user_id: int,
+        category: str = None,
+        cancel: bool = False,
+        main_menu: bool = False,
+    ) -> None:
         """
         Renews or cancels a user's subscription to a category.
 
@@ -58,7 +60,6 @@ class UserRepo(BaseRepo):
             "Юридична підтримка": "legal_support",
         }
         user = await self.get_user(user_id)
-        # print(user.topics.)
 
         if cancel:
             setattr(user, user.active_category, False)
@@ -83,15 +84,15 @@ class UserRepo(BaseRepo):
             "youth_policy": "Молодіжна політика 📚",
             "psychologist_support": "Підтримка психолога 🧘",
             "civic_education": "Громадянська освіта 🏛",
-            "legal_support": "Юридична підтримка ⚖️"
+            "legal_support": "Юридична підтримка ⚖️",
         }
         user = await self.get_user(user_id)
-        subscriptions = [categories[category] for category in categories if getattr(user, category)]
+        subscriptions = [
+            categories[category] for category in categories if getattr(user, category)
+        ]
         return subscriptions
 
-    async def add_topic_id(self,
-                           user_id: int,
-                           topic_id: int) -> None:
+    async def add_topic_id(self, user_id: int, topic_id: int) -> None:
         """
         Add topic id in database
 
@@ -102,9 +103,7 @@ class UserRepo(BaseRepo):
         setattr(user, f"{user.active_category}_topic", topic_id)
         await self.session.commit()
 
-    async def get_user_id_by_topic(self,
-                                   topic_id: int,
-                                   category: str) -> int:
+    async def get_user_id_by_topic(self, topic_id: int, category: str) -> int:
         """
         Retrieve a user ID based on a specific topic ID and category.
 
@@ -112,7 +111,9 @@ class UserRepo(BaseRepo):
         :param category: The category to search within.
         :return: The user ID associated with the provided topic and category.
         """
-        query = select(User.user_id).where(getattr(User, f"{category}_topic") == topic_id)
+        query = select(User.user_id).where(
+            getattr(User, f"{category}_topic") == topic_id
+        )
         return await self.session.scalar(query)
 
     async def get_all_users(self) -> List[tuple]:
@@ -121,7 +122,20 @@ class UserRepo(BaseRepo):
 
         :return: A list of tuples containing user data.
         """
+        fields = (
+            "user_id",
+            "first_name",
+            "last_name",
+            "username",
+            "youth_policy",
+            "psychologist_support",
+            "civic_education",
+            "legal_support",
+        )
+
         users = await self.session.execute(select(User))
-        user_data = [(user.user_id, user.first_name, user.last_name, user.username, user.youth_policy,
-                      user.psychologist_support, user.civic_education, user.legal_support) for user in users.scalars()]
+        user_data = [
+            tuple(getattr(user, field) for field in fields) for user in users.scalars()
+        ]
+
         return user_data

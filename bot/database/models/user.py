@@ -1,6 +1,6 @@
 from typing import Optional
 
-from sqlalchemy import String, BIGINT, BOOLEAN, INTEGER
+from sqlalchemy import BIGINT, BOOLEAN, INTEGER, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from bot.database.models.base import Base
@@ -9,7 +9,9 @@ from bot.database.models.base import Base
 class User(Base):
     __tablename__ = "users"
 
-    user_id: Mapped[int] = mapped_column(BIGINT, primary_key=True, nullable=False, unique=True)
+    user_id: Mapped[int] = mapped_column(
+        BIGINT, primary_key=True, nullable=False, unique=True
+    )
     first_name: Mapped[str] = mapped_column(String(128))
     last_name: Mapped[Optional[str]] = mapped_column(String(128))
     username: Mapped[Optional[str]] = mapped_column(String(128))

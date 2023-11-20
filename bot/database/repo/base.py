@@ -9,5 +9,6 @@ class BaseRepo:
         session (AsyncSession): The database session used by the repository.
 
     """
+
     def __init__(self, session) -> None:
         self.session: AsyncSession = session

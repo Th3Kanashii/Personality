@@ -1,8 +1,7 @@
 from aiogram import types
 
 
-async def get_album(album: list[types.Message],
-                    category: str = None) -> list:
+def get_album(album: list[types.Message], category: str = None) -> list:
     """
     Converts a list of messages into a media group for sending as an album.
 
@@ -13,7 +12,9 @@ async def get_album(album: list[types.Message],
     media_group = []
 
     for msg in album:
-        caption = f"{category} {msg.caption or ''}" if category is not None else msg.caption
+        caption = (
+            f"{category} {msg.caption or ''}" if category is not None else msg.caption
+        )
 
         if msg.photo:
             media_type = types.InputMediaPhoto

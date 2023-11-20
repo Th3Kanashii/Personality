@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from bot.database.repo.posts import PostRepo
 from bot.database.repo.users import UserRepo
 
 
@@ -21,3 +22,10 @@ class RequestsRepo:
         The User repository sessions are required to manage user operations.
         """
         return UserRepo(self.session)
+
+    @property
+    def posts(self) -> PostRepo:
+        """
+        The Post repository sessions are required to manage user operations.
+        """
+        return PostRepo(self.session)

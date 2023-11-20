@@ -1,8 +1,8 @@
 import asyncio
-from typing import Callable, Any, Awaitable, Union, Dict
+from typing import Any, Awaitable, Callable, Dict, Union
 
 from aiogram import BaseMiddleware
-from aiogram.types import Message
+from aiogram.types import CallbackQuery, Message
 
 
 class MediaGroupMiddleware(BaseMiddleware):
@@ -11,10 +11,14 @@ class MediaGroupMiddleware(BaseMiddleware):
     def __init__(self, latency: Union[int, float] = 0.01):
         self.latency = latency
 
-    async def __call__(self,
-                       handler: Callable[[Message, Dict[str, Any]], Awaitable[Any]],
-                       message: Message,
-                       data: Dict[str, Any]) -> Any:
+    async def __call__(
+        self,
+        handler: Callable[[Message, Dict[str, Any]], Awaitable[Any]],
+        message: Union[Message, CallbackQuery],
+        data: Dict[str, Any],
+    ) -> Any:
+        if isinstance(message, CallbackQuery):
+            return await handler(message, data)
         if not message.media_group_id:
             await handler(message, data)
             return

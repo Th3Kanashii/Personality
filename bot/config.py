@@ -24,6 +24,7 @@ class DbConfig:
     port : int
         The port where the hhj server is listening.
     """
+
     host: str
     password: str
     user: str
@@ -43,18 +44,20 @@ class DbConfig:
             host = self.host
         if not port:
             port = self.port
-        uri = URL.create(drivername=f"postgresql+{driver}",
-                         username=self.user,
-                         password=self.password,
-                         host=host,
-                         port=port,
-                         database=self.database)
+        uri = URL.create(
+            drivername=f"postgresql+{driver}",
+            username=self.user,
+            password=self.password,
+            host=host,
+            port=port,
+            database=self.database,
+        )
         return uri.render_as_string(hide_password=False)
 
     @staticmethod
     def from_env(env: Env):
         """
-        Creates a hhj configuration object.
+        Creates a database configuration object.
 
         :param env: An Env object containing environment settings.
         :return: A hhj configuration object.
@@ -64,7 +67,9 @@ class DbConfig:
         user = env.str("POSTGRES_USER")
         database = env.str("POSTGRES_DB")
         port = env.int("DB_PORT", 5432)
-        return DbConfig(host=host, password=password, user=user, database=database, port=port)
+        return DbConfig(
+            host=host, password=password, user=user, database=database, port=port
+        )
 
 
 @dataclass
@@ -78,12 +83,15 @@ class TgBot:
     token : str
         The token received from BotFather.
     """
+
     token: str
     youth_policy: str
     psychologist_support: str
     civic_education: str
     legal_support: str
     admins: List[int]
+    all_groups: List[int]
+    use_redis: bool
 
     @staticmethod
     def from_env(env: Env):
@@ -98,9 +106,19 @@ class TgBot:
         psychologist_support = env.str("PSYCHOLOGIST_SUPPORT")
         civic_education = env.str("CIVIC_EDUCATION")
         legal_support = env.str("LEGAL_SUPPORT")
-        admins = [int(env.str(f"ADMIN_{i}")) for i in range(1, 5)]
-        return TgBot(token=token, youth_policy=youth_policy, psychologist_support=psychologist_support,
-                     civic_education=civic_education, legal_support=legal_support, admins=admins)
+        admins = list(map(int, env.list("ADMINS")))
+        all_groups = list(map(int, env.list("GROUPS")))
+        use_redis = env.bool("USE_REDIS")
+        return TgBot(
+            token=token,
+            youth_policy=youth_policy,
+            psychologist_support=psychologist_support,
+            civic_education=civic_education,
+            legal_support=legal_support,
+            admins=admins,
+            all_groups=all_groups,
+            use_redis=use_redis,
+        )
 
 
 @dataclass
@@ -121,7 +139,7 @@ class RedisConfig:
 
     def dsn(self) -> str:
         """
-        Constructs and returns a Redis DSN (Data Source Name) for this hhj configuration.
+        Constructs and returns a Redis DSN (Data Source Name) for this redis configuration.
         """
         return f"redis://{self.redis_host}:{self.redis_port}/0"
 
@@ -150,8 +168,11 @@ class Config:
     tg_bot: TgBot
         The Telegram bot configuration object
     db: DbConfig
-        The hhj configuration object
+        The db configuration object
+    redis: RedisConfig
+        The Redis configuration object
     """
+
     tg_bot: TgBot
     db: DbConfig
     redis: RedisConfig
@@ -166,6 +187,8 @@ def load_config(path: str = None) -> Config:
     """
     env = Env()
     env.read_env(path)
-    return Config(tg_bot=TgBot.from_env(env),
-                  db=DbConfig.from_env(env),
-                  redis=RedisConfig.from_env(env))
+    return Config(
+        tg_bot=TgBot.from_env(env),
+        db=DbConfig.from_env(env),
+        redis=RedisConfig.from_env(env),
+    )
