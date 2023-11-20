@@ -35,7 +35,7 @@ async def send_post(
         "Особистість / Юридична підтримка": 7,
     }
     data = await repo.users.get_all_users()
-    file_path = "/home/kanashii/Projects/Personality/data.json"
+    file_path = "/root/Personality/data.json"
     category = category_mapping.get(message.chat.title)
     post_id = str(uuid.uuid4())
 

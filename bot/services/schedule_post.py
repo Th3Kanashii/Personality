@@ -19,8 +19,8 @@ async def schedule_post(bot: Bot, session_maker: async_sessionmaker) -> None:
     """
     session: AsyncSession
     file_path: Literal[
-        "/home/kanashii/Projects/Personality/data.json"
-    ] = "/home/kanashii/Projects/Personality/data.json"
+        "/root/Personality/data.json"
+    ] = "/root/Personality/data.json"
     id_users: Set = set()
 
     async with session_maker() as session:
