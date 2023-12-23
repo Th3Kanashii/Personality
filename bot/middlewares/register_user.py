@@ -1,4 +1,4 @@
-from typing import Any, Awaitable, Callable, Dict
+from typing import Any, Awaitable, Callable, Dict, List
 
 from aiogram import BaseMiddleware
 from aiogram.types import Message, user
@@ -23,5 +23,9 @@ class RegisterUserMiddleware(BaseMiddleware):
                 last_name=tg_user.last_name,
                 username=tg_user.username,
             )
+        subscriptions: List[str] = await repo.users.get_user_subscriptions(
+            user_id=tg_user.id
+        )
+        data["subscriptions"] = subscriptions
 
         return await handler(event, data)

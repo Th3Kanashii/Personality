@@ -1,10 +1,11 @@
-from typing import Any, Awaitable, Callable, Dict
+from typing import Any, Awaitable, Callable, Dict, List, Union
 
 from aiogram import BaseMiddleware, Bot
-from aiogram.types import Message, user
+from aiogram.types import ForumTopic, Message, user
 from aiogram.utils.markdown import hlink
 
-from bot.database import RequestsRepo
+from bot.config import Config
+from bot.database import RequestsRepo, User
 from bot.keyboards import cancel_subscription, start
 
 
@@ -27,7 +28,7 @@ class TopicMiddleware(BaseMiddleware):
             "щоб проконсультувати тебе якісно.",
             reply_markup=cancel_subscription(),
         )
-        topic_id = await bot.create_forum_topic(
+        topic_id: ForumTopic = await bot.create_forum_topic(
             chat_id=chat_id, name=message.from_user.first_name
         )
         await bot.send_message(
@@ -51,27 +52,30 @@ class TopicMiddleware(BaseMiddleware):
     ) -> Any:
         tg_user: user.User = data.get("event_from_user")
         repo: RequestsRepo = data["repo"]
-        config = data["config"]
+        config: Config = data["config"]
 
-        user_object = await repo.users.get_user(user_id=tg_user.id)
-        active_category = user_object.active_category
-        user_topic = f"{active_category}_topic"
+        user_object: User = await repo.users.get_user(user_id=tg_user.id)
+        active_category: Union[str, None] = user_object.active_category
+        user_topic: str = f"{active_category}_topic"
 
         if active_category == "civic_education":
             await event.answer(
                 text="Спілкування з волонтером не доступно",
                 reply_markup=cancel_subscription(),
             )
+            return
 
         elif not active_category:
-            subscriptions = await repo.users.get_user_subscriptions(user_id=tg_user.id)
+            subscriptions: List[str] = await repo.users.get_user_subscriptions(
+                user_id=tg_user.id
+            )
             await event.answer(
                 text="Будь ласка оберіть категорію", reply_markup=start(subscriptions)
             )
             return
 
         elif hasattr(user_object, user_topic) and not getattr(user_object, user_topic):
-            chat_id = getattr(config.tg_bot, user_object.active_category)
+            chat_id: str = getattr(config.tg_bot, user_object.active_category)
             await self.create_topic(
                 chat_id=chat_id, bot=data["bot"], message=event, repo=repo
             )

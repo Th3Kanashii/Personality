@@ -1,8 +1,11 @@
+from functools import lru_cache
+from typing import List
+
 from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
 
 
-def start(subscriptions: list) -> ReplyKeyboardMarkup:
+def start(subscriptions: List[str]) -> ReplyKeyboardMarkup:
     """
     Generates a reply keyboard for starting a chat session.
 
@@ -10,8 +13,8 @@ def start(subscriptions: list) -> ReplyKeyboardMarkup:
     :return: A reply keyboard markup with options for each subscription category.
              Subscribed categories are marked with a checkmark (✅).
     """
-    keyboard = ReplyKeyboardBuilder()
-    categories = [
+    keyboard: ReplyKeyboardBuilder = ReplyKeyboardBuilder()
+    categories: List[str] = [
         "Молодіжна політика 📚",
         "Підтримка психолога 🧘",
         "Громадянська освіта 🏛",
@@ -29,13 +32,14 @@ def start(subscriptions: list) -> ReplyKeyboardMarkup:
     return keyboard.as_markup(resize_keyboard=True)
 
 
+@lru_cache
 def cancel_subscription() -> ReplyKeyboardMarkup:
     """
     Generates a reply keyboard for canceling a subscription.
 
     :return: A reply keyboard markup with options to cancel a subscription and return to the main menu.
     """
-    keyboard = ReplyKeyboardBuilder()
+    keyboard: ReplyKeyboardBuilder = ReplyKeyboardBuilder()
     keyboard.row(
         KeyboardButton(text="Скасувати підписку ❌"),
         KeyboardButton(text="Головне меню 📌"),

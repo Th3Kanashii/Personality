@@ -1,10 +1,9 @@
-.idea/
-__pycache__/
-*.pyc
-venv/
-.env
 migrations/
+venv/
+__pycache__/
+cache/
+.env
 *.ini
-*.json
 *.log
-*.pdf
+*.pyc
+.idea/

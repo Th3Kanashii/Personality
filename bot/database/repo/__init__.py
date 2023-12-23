@@ -3,4 +3,9 @@ from .posts import PostRepo
 from .requests import RequestsRepo
 from .users import UserRepo
 
-__all__ = ["BaseRepo", "RequestsRepo", "UserRepo", "PostRepo"]
+__all__: list[str] = [
+    "BaseRepo",
+    "RequestsRepo",
+    "UserRepo",
+    "PostRepo",
+]

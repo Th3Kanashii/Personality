@@ -6,6 +6,7 @@ from bot.database.models.base import Base
 
 class Post(Base):
     __tablename__ = "posts"
+
     id: Mapped[int] = mapped_column(INTEGER, primary_key=True)
     user_id: Mapped[int] = mapped_column(
         BIGINT, ForeignKey("users.user_id"), nullable=False

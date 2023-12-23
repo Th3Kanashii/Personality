@@ -1,0 +1,13 @@
+[Unit]
+Description=Personality
+
+[Service]
+Type=simple
+WorkingDirectory=/root/Personality
+ExecStart=/root/Personality/venv/bin/python3.11 -m bot
+KillMode=process
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

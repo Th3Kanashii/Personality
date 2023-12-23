@@ -2,20 +2,23 @@ from typing import List
 
 from aiogram import Router
 
-from .admin import get_admin_routers
-from .user import get_user_routers
+from .admin import get_admin_router
+from .user import get_user_router
 
 
 def get_routers() -> List[Router]:
     """
+    Get all routers.
 
-    Returns:
-        List[Router]: _description_
+    :return: A list of Router objects for all interactions.
     """
-    admin_routers: List[Router] = get_admin_routers()
-    user_routers: List[Router] = get_user_routers()
+    admin_router: Router = get_admin_router()
+    user_router: Router = get_user_router()
 
-    return [*admin_routers, *user_routers]
+    return [
+        admin_router,
+        user_router,
+    ]
 
 
-__all__ = ["get_routers"]
+__all__: list[str] = ["get_routers"]

@@ -19,30 +19,31 @@ class UserIdMiddleware(BaseMiddleware):
     ) -> Any:
         repo: RequestsRepo = data["repo"]
 
-        categories = {
-            "Особистість / Молодіжна політика": [
-                "youth_policy",
-                "Молодіжна політика 📚:",
-            ],
-            "Особистість / Підтримка психолога": [
-                "psychologist_support",
-                "Підтримка психолога 🧘:",
-            ],
-            "Особистість / Юридична підтримка": [
-                "legal_support",
-                "Юридична підтримка ⚖️:",
-            ],
+        categories: Dict[str, Dict[str, str]] = {
+            "Особистість / Молодіжна політика": {
+                "id": "youth_policy",
+                "label": "Молодіжна політика 📚",
+            },
+            "Особистість / Підтримка психолога": {
+                "id": "psychologist_support",
+                "label": "Підтримка психолога 🧘",
+            },
+            "Особистість / Юридична підтримка": {
+                "id": "legal_support",
+                "label": "Юридична підтримка ⚖️",
+            },
         }
-        key = f"{event.chat.id}_{event.message_thread_id}"
-        user_id = self.cache.get(key)
+
+        key: str = f"{event.chat.id}_{event.message_thread_id}"
+        user_id: int = self.cache.get(key)
 
         if not user_id:
-            user_id = await repo.users.get_user_id_by_topic(
+            user_id: int = await repo.users.get_user_id_by_topic(
                 topic_id=event.message_thread_id,
-                category=categories.get(event.chat.title)[0],
+                category=categories.get(event.chat.title)["id"],
             )
             self.cache[key] = user_id
 
         data["user_id"] = user_id
-        data["category"] = categories.get(event.chat.title)[1]
+        data["category"] = categories.get(event.chat.title)["label"]
         return await handler(event, data)

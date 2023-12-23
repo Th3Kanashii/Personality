@@ -10,7 +10,7 @@ class SchedulerMiddleware(BaseMiddleware):
     def __init__(self, scheduler: AsyncIOScheduler) -> None:
         super().__init__()
         self.scheduler = scheduler
-        self.cache = LRUCache(maxsize=50)
+        self.cache = LRUCache(maxsize=20)
 
     async def __call__(
         self,

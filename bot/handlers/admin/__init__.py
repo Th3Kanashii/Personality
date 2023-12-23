@@ -1,26 +1,30 @@
-from typing import List
+from typing import Final, List
 
-from aiogram import Router
+from aiogram import F, Router
 
-from bot.filters import Admin
-from bot.middlewares import UserIdMiddleware
-
-from . import from_forum, get_db, help, post
+from . import all, from_forum, get_db, help, post
 
 
-def get_admin_routers() -> List[Router]:
-    """_summary_
-
-    Returns:
-        List[Router]: _description_
+def get_admin_router() -> Router:
     """
-    post.router.message.filter(Admin())
-    get_db.router.message.filter(Admin())
-    help.router.message.filter(Admin())
-    from_forum.router.message.filter(Admin(command=False))
+    Create and configure a admin-specific router.
 
-    from_forum.router.message.middleware(UserIdMiddleware())
-    return [get_db.router, post.router, help.router, from_forum.router]
+    :return: A Router object for admin interactions.
+    """
+    admin_router: Final[Router] = Router(name=__name__)
+    admin_router.message.filter(F.chat.type != "private")
+    routers_list: List[Router] = [
+        all.router,
+        get_db.router,
+        post.router,
+        help.router,
+        from_forum.router,
+    ]
+    admin_router.include_routers(*routers_list)
+
+    return admin_router
 
 
-__all__ = ["get_admin_routers"]
+__all__: list[str] = [
+    "get_admin_router",
+]

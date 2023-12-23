@@ -1,17 +1,25 @@
-from aiogram import Bot, Router, html, types
+from typing import Final, List, Optional
 
-from bot.misc import get_album
+from aiogram import Bot, Router, html
+from aiogram.types import Message
 
-router = Router()
+from bot.filters import Admin
+from bot.middlewares import AlbumMiddleware, UserIdMiddleware
+
+router: Final[Router] = Router(name=__name__)
+router.message.filter(Admin(command=False))
+
+router.message.middleware(AlbumMiddleware())
+router.message.middleware(UserIdMiddleware())
 
 
 @router.message()
 async def from_forum(
-    message: types.Message,
+    message: Message,
     bot: Bot,
     user_id: int,
     category: str,
-    album: list[types.Message] = None,
+    album: Optional[List[Message]] = None,
 ) -> None:
     """
     Handler messages from admin and copy them to a user chat.
@@ -23,20 +31,17 @@ async def from_forum(
     :param album: List of messages for creating a media album (optional).
     """
     if message.media_group_id:
-        media = get_album(
-            album=album, category=f"{html.bold(html.italic(html.quote(category)))}"
-        )
-        await bot.send_media_group(chat_id=user_id, media=media)
+        await bot.send_media_group(chat_id=user_id, media=album)
 
     elif message.text:
         await bot.send_message(
             chat_id=user_id,
-            text=f"{html.bold(html.italic(html.quote(category)))} {message.text}",
+            text=f"{html.bold(html.italic(category))}: {message.text}",
         )
 
     else:
         await message.copy_to(
             chat_id=user_id,
-            caption=f"{html.bold(html.italic(html.quote(category)))}"
+            caption=f"{html.bold(html.italic(category))}:"
             f" {message.caption if message.caption is not None else ''}",
         )

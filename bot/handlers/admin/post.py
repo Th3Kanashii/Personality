@@ -1,23 +1,38 @@
 from datetime import datetime
+from typing import Any, Dict, Final
 
-from aiogram import Bot, F, Router, types
+from aiogram import Bot, F, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
+from aiogram.types import CallbackQuery, Message
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from cachetools import LRUCache
 
 from bot.database import RequestsRepo
+from bot.filters import Admin
 from bot.keyboards import cancel_post, cancel_scheduler
-from bot.misc import States
-from bot.services import send_post
+from bot.misc import States, send_post
 
-router = Router()
+router: Final[Router] = Router(name=__name__)
+router.message.filter(Admin())
 
 
-@router.message(Command(commands=["post"]))
-async def command_post(
-    message: types.Message, state: FSMContext, cache: LRUCache
-) -> None:
+def scheduled_post(cache: LRUCache) -> str:
+    """
+    Generates a formatted string representing the list of scheduled posts.
+
+    :param cache: The LRUCache to store information about scheduled jobs.
+    :return: A string displaying the scheduled posts and a prompt for specifying the time.
+    """
+    return (
+        f"<b>{'Список запланованих розсилок ⌛️' if cache else ''}\n"
+        f"{''.join(value[1] for value in cache.values())}</b>\n\n"
+        f"Вкажіть час в форматі DD/MM/hh:mm ⏰"
+    )
+
+
+@router.message(Command("post"))
+async def command_post(message: Message, state: FSMContext, cache: LRUCache) -> None:
     """
     Handler the /post command.
     Initiating the process of scheduling and sending posts.
@@ -26,9 +41,7 @@ async def command_post(
     :param state: The FSMContext to manage the conversation state.
     """
     await message.answer(
-        text=f"<b>{'Список запланованих розсилок ⌛️' if cache else ''}\n"
-        f"{' '.join(value[1] for value in cache.values())}</b>\n\n"
-        f"Вкажіть час в форматі YYYY-MM-DD hh:mm ⏰",
+        text=scheduled_post(cache=cache),
         reply_markup=cancel_post(),
     )
     await state.set_state(States.post_datetime)
@@ -36,7 +49,7 @@ async def command_post(
 
 @router.message(States.post_datetime)
 async def post_datetime(
-    message: types.Message, bot: Bot, state: FSMContext, cache: LRUCache
+    message: Message, bot: Bot, state: FSMContext, cache: LRUCache
 ) -> None:
     """
     Handler admin input for setting the post date and time or cancelling the process.
@@ -46,15 +59,17 @@ async def post_datetime(
     :param state: The FSMContext to manage the conversation state.
     """
     try:
-        target_datetime = datetime.strptime(message.text, "%Y-%m-%d %H:%M")
+        target_datetime = datetime.strptime(message.text, "%d/%m/%H:%M")
 
         current_datetime = datetime.now()
 
+        # Format current_datetime to match the format of target_datetime
+        current_datetime_str = current_datetime.strftime("%d/%m/%H:%M")
+        current_datetime = datetime.strptime(current_datetime_str, "%d/%m/%H:%M")
+
         if target_datetime < current_datetime:
             await bot.edit_message_text(
-                text=f"<b>{'Список запланованих розсилок ⌛️' if cache else ''}\n"
-                f"{' '.join(value[1] for value in cache.values())}</b>\n\n"
-                f"Вкажіть час в форматі YYYY-MM-DD hh:mm ⏰",
+                text=scheduled_post(cache=cache),
                 chat_id=message.chat.id,
                 message_id=message.message_id - 1,
             )
@@ -63,11 +78,11 @@ async def post_datetime(
                 reply_markup=cancel_post(),
             )
         else:
-            time_difference = (target_datetime - current_datetime).total_seconds()
+            time_difference: float = (
+                target_datetime - current_datetime
+            ).total_seconds()
             await bot.edit_message_text(
-                text=f"<b>{'Список запланованих розсилок ⌛️' if cache else ''}\n"
-                f"{' '.join(value[1] for value in cache.values())}</b>\n\n"
-                f"Вкажіть час в форматі YYYY-MM-DD hh:mm ⏰",
+                text=scheduled_post(cache=cache),
                 chat_id=message.chat.id,
                 message_id=message.message_id - 1,
             )
@@ -79,15 +94,13 @@ async def post_datetime(
             await state.set_state(States.post)
     except ValueError:
         await bot.edit_message_text(
-            text=f"<b>{'Список запланованих розсилок ⌛️' if cache else ''}\n"
-            f"{' '.join(value[1] for value in cache.values())}</b>\n\n"
-            f"Вкажіть час в форматі YYYY-MM-DD hh:mm ⏰",
+            text=scheduled_post(cache=cache),
             chat_id=message.chat.id,
             message_id=message.message_id - 1,
         )
         await message.answer(
             text="Неправильно введені дані ❌\n"
-            "Використовуйте формат YYYY-MM-DD hh:mm ⏰\n"
+            "Використовуйте формат DD/MM/hh:mm ⏰\n"
             "Спробуйте ще раз 🔄",
             reply_markup=cancel_post(),
         )
@@ -99,7 +112,7 @@ async def post_datetime(
 
 @router.message(States.post)
 async def post(
-    message: types.Message,
+    message: Message,
     state: FSMContext,
     bot: Bot,
     repo: RequestsRepo,
@@ -114,7 +127,7 @@ async def post(
     :param bot: The bot object used to interact with the Telegram API.
     :param repo: The repository for database requests.
     """
-    data = await state.get_data()
+    data: Dict[str, Any] = await state.get_data()
     if not message.text:
         await message.answer(
             text="Надішліть текст для сповіщення ✍️",
@@ -137,10 +150,10 @@ async def post(
     else:
         days, remainder = divmod(data["datetime"], 86400)
         hours, remainder = divmod(remainder, 3600)
-        minutes, seconds = divmod(remainder, 60)
+        minutes, _ = divmod(remainder, 60)
 
-        job_id = f"{message.from_user.id}{message.date.timestamp()}"
-        unique_id = f"{message.chat.title} - {data['time']}"
+        job_id: str = f"{message.from_user.id}{message.date.timestamp()}"
+        unique_id: str = f"{message.chat.title.split('/')[1]} - {data['time']}\n"
         scheduler.add_job(
             func=send_post,
             args=(message, bot, message.text, repo, scheduler, job_id, cache),
@@ -171,7 +184,7 @@ async def post(
 
 @router.callback_query(F.data == "cancel")
 async def callback_cancel_scheduler(
-    callback: types.CallbackQuery,
+    callback: CallbackQuery,
     cache: LRUCache,
     scheduler: AsyncIOScheduler,
 ) -> None:
@@ -179,11 +192,15 @@ async def callback_cancel_scheduler(
     Handler the callback from admin who wants to cancel a scheduled notification.
 
     :param callback: The callback query from the admin.
+    :param cache: The LRUCache to store information about scheduled jobs.
+    :param scheduler: The AsyncIOScheduler to manage scheduled tasks.
     """
-    job_id = callback.message.text.split("id: ")[-1]
-    new_text = callback.message.text.split("\n\n")[0]
+    job_id: str = callback.message.text.split("id: ")[-1]
+    new_text: str = callback.message.text.split("\n\n")[0]
+
     scheduler.remove_job(job_id)
     del cache[job_id]
+
     await callback.message.unpin()
     await callback.message.edit_text(
         text=f"{new_text}\n\n" f"<b>Сповіщення скасовано ❌</b>"
@@ -191,15 +208,25 @@ async def callback_cancel_scheduler(
 
 
 @router.callback_query(F.data == "cancel_post")
-async def callback_cancel_post(
-    callback: types.CallbackQuery, state: FSMContext
-) -> None:
+async def callback_cancel_post(callback: CallbackQuery, state: FSMContext) -> None:
+    """
+    Handler the callback from an admin who wants to cancel a post creation.
+
+    :param callback: The callback query from the admin.
+    :param state: The FSMContext to manage the conversation state.
+    """
     await callback.message.edit_text(text="<b>Сповіщення скасовано ❌</b>")
     await state.clear()
 
 
 @router.callback_query(F.data == "next")
-async def callback_next_post(callback: types.CallbackQuery, state: FSMContext) -> None:
+async def callback_next_post(callback: CallbackQuery, state: FSMContext) -> None:
+    """
+    Handler the callback from an admin to proceed to the next step in post creation.
+
+    :param callback: The callback query from the admin.
+    :param state: The FSMContext to manage the conversation state.
+    """
     await callback.message.edit_text(
         text="Надішліть текст для сповіщення ✍️",
         reply_markup=cancel_post(back=True),
@@ -210,12 +237,17 @@ async def callback_next_post(callback: types.CallbackQuery, state: FSMContext) -
 
 @router.callback_query(F.data == "back")
 async def callback_back_post(
-    callback: types.CallbackQuery, state: FSMContext, cache: LRUCache
+    callback: CallbackQuery, state: FSMContext, cache: LRUCache
 ) -> None:
+    """
+    Handler the callback from an admin to go back to the previous step in post creation.
+
+    :param callback: The callback query from the admin.
+    :param state: The FSMContext to manage the conversation state.
+    :param cache: The LRUCache to store information about scheduled jobs.
+    """
     await callback.message.edit_text(
-        text=f"<b>{'Список запланованих розсилок ⌛' if cache else ''}\n"
-        f"{' '.join(value[1] for value in cache.values())}</b>\n\n"
-        f"Вкажіть час в форматі YYYY-MM-DD hh:mm ⏰",
+        text=scheduled_post(cache=cache),
         reply_markup=cancel_post(),
     )
     await state.set_state(States.post_datetime)

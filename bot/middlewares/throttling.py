@@ -1,15 +1,14 @@
-from datetime import datetime
-from typing import Any, Awaitable, Callable, Dict
+from typing import Any, Awaitable, Callable, Dict, Union
 
 from aiogram import BaseMiddleware
+from aiogram.dispatcher.flags import get_flag
 from aiogram.types import Message
-from cachetools import LRUCache
+from cachetools import TTLCache
 
 
 class ThrottlingMiddleware(BaseMiddleware):
-    def __init__(self, limit: float = 0.8) -> None:
-        self.limit = limit
-        self.cache = LRUCache(maxsize=30)
+    def __init__(self, limit: Union[int, float] = 0.5) -> None:
+        self.cache: Dict[str, TTLCache] = {"default": TTLCache(maxsize=100, ttl=limit)}
 
     async def __call__(
         self,
@@ -17,12 +16,10 @@ class ThrottlingMiddleware(BaseMiddleware):
         event: Message,
         data: Dict[str, Any],
     ) -> Any:
-        user_id = event.from_user.id
-        current_time = datetime.now().timestamp()
-        last_message_time = self.cache.get(user_id, 0)
-
-        if current_time - last_message_time < self.limit:
-            return
-        else:
-            self.cache[user_id] = current_time
+        throttling_key = get_flag(data, "throttling_key")
+        if throttling_key is not None and throttling_key in self.cache:
+            if event.chat.id in self.cache[throttling_key]:
+                return
+            else:
+                self.cache[throttling_key][event.chat.id] = None
         return await handler(event, data)

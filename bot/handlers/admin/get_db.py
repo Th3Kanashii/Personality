@@ -1,16 +1,21 @@
+import csv
 import os
+from typing import Final, List, Literal, Union
 
-import openpyxl
-from aiogram import Router, types
+import aiofiles
+from aiogram import Router
 from aiogram.filters import Command
+from aiogram.types import FSInputFile, Message
 
 from bot.database import RequestsRepo
+from bot.filters import Admin
 
-router = Router()
+router: Final[Router] = Router(name=__name__)
+router.message.filter(Admin())
 
 
-@router.message(Command(commands=["db"]))
-async def get_db(message: types.Message, repo: RequestsRepo) -> None:
+@router.message(Command("db"))
+async def get_db(message: Message, repo: RequestsRepo) -> None:
     """
     Handler to /db commands.
     Generates a database report in the form of an Excel file and sends it.
@@ -18,7 +23,7 @@ async def get_db(message: types.Message, repo: RequestsRepo) -> None:
     :param message: The message from Telegram.
     :param repo: The repository for database requests.
     """
-    headers = [
+    headers: List[str] = [
         "ID",
         "Ім'я",
         "Прізвище",
@@ -29,31 +34,31 @@ async def get_db(message: types.Message, repo: RequestsRepo) -> None:
         "Юридична підтримка",
     ]
 
-    data = await repo.users.get_all_users()
+    data: List[tuple] = await repo.users.get_all_users()
 
-    workbook = openpyxl.Workbook()
-    sheet = workbook.active
-    sheet.append(headers)
+    users: Literal[0] = 0
+    category_counts: List[int] = [0, 0, 0, 0]
 
-    users = 0
-    category_counts = [0, 0, 0, 0]
+    async with aiofiles.open(
+        "users.csv", mode="w", newline="", encoding="utf-8"
+    ) as file:
+        writer = csv.writer(file)
+        await writer.writerow(headers)
 
-    for row_data in data:
-        users += 1
-        for i in range(4, 8):
-            category_counts[i - 4] += 1 if row_data[i] else 0
-        sheet.append(row_data)
+        for row_data in data:
+            users += 1
+            for i in range(4, 8):
+                category_counts[i - 4] += 1 if row_data[i] else 0
+            await writer.writerow(row_data)
 
-    subscription_count = sum(category_counts)
-    category_percentages = [
+    subscription_count: int = sum(category_counts)
+    category_percentages: List[Union[float, int]] = [
         round((count / subscription_count) * 100, 1) if subscription_count > 0 else 0
         for count in category_counts
     ]
+    file_data: FSInputFile = FSInputFile(path="users.csv", filename="users.csv")
 
-    workbook.save("users.xlsx")
-    file_data = types.FSInputFile(path="users.xlsx", filename="users.xlsx")
-
-    response_text = (
+    response_text: str = (
         f"Кількість користувачів у боті - {users}\n"
         f"Кількість підписок - {subscription_count}\n\n"
         f"Молодіжна політика - {category_counts[0]} ({category_percentages[0]}%)\n"
@@ -63,4 +68,5 @@ async def get_db(message: types.Message, repo: RequestsRepo) -> None:
     )
 
     await message.answer_document(document=file_data, caption=response_text)
-    os.remove("users.xlsx")
+
+    os.remove("users.csv")

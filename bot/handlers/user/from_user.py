@@ -1,17 +1,26 @@
-from aiogram import Bot, Router, types
+from typing import Dict, Final, List, Optional
 
-from bot.misc import get_album
+from aiogram import Bot, Router
+from aiogram.types import Message
 
-router = Router()
+from bot.middlewares import AlbumMiddleware, ThrottlingMiddleware, TopicMiddleware
+
+flags: Final[Dict[str, str]] = {"throttling_key": "default"}
+
+router: Final[Router] = Router(name=__name__)
+
+router.message.middleware(AlbumMiddleware())
+router.message.middleware(ThrottlingMiddleware())
+router.message.middleware(TopicMiddleware())
 
 
-@router.message()
+@router.message(flags=flags)
 async def from_user(
-    message: types.Message,
+    message: Message,
     bot: Bot,
     chat_id: int,
     topic_id: int,
-    album: list[types.Message] = None,
+    album: Optional[List[Message]] = None,
 ) -> None:
     """
     Handler messages from a user and copy them to a specific chat and topic.
@@ -23,9 +32,8 @@ async def from_user(
     :param album: List of messages for creating a media album (optional).
     """
     if message.media_group_id:
-        media = get_album(album=album)
         await bot.send_media_group(
-            chat_id=chat_id, media=media, message_thread_id=topic_id
+            chat_id=chat_id, media=album, message_thread_id=topic_id
         )
     else:
         await message.copy_to(chat_id=chat_id, message_thread_id=topic_id)

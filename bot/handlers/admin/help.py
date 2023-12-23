@@ -1,18 +1,26 @@
-from aiogram import Router, types
+from typing import Final
+
+from aiogram import Router
 from aiogram.filters import Command
+from aiogram.types import FSInputFile, Message
 
-router = Router()
+from bot.filters import Admin
+
+router: Final[Router] = Router(name=__name__)
+router.message.filter(Admin())
 
 
-@router.message(Command(commands=["help"]))
-async def command_help(message: types.Message) -> None:
+@router.message(Command("help"))
+async def command_help(message: Message) -> None:
     """
     Handler to /help commands.
     Responds with a help message providing information about available commands.
 
     :param message: The message from Telegram.
     """
-    documentation = types.FSInputFile(path="README.pdf", filename="README.pdf")
+    documentation: FSInputFile = FSInputFile(
+        path="data/README.pdf", filename="README.pdf"
+    )
     await message.answer_document(
         document=documentation,
         caption="Отримання бази даних у форматі *.xlsx можливе за допомогою команди <b>/db</b>.\n\n"

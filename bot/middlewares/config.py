@@ -3,9 +3,11 @@ from typing import Any, Awaitable, Callable, Dict
 from aiogram import BaseMiddleware
 from aiogram.types import Message
 
+from bot.config import Config
+
 
 class ConfigMiddleware(BaseMiddleware):
-    def __init__(self, config) -> None:
+    def __init__(self, config: Config) -> None:
         self.config = config
 
     async def __call__(

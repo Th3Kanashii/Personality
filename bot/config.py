@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List
+from typing import List, Optional
 
 from environs import Env
 from sqlalchemy.engine.url import URL
@@ -9,20 +9,20 @@ from sqlalchemy.engine.url import URL
 class DbConfig:
     """
     Database configuration class.
-    This class holds the settings for the hhj, such as host, password, port, etc.
+    This class holds the settings for the database, such as host, password, port, etc.
 
     Attributes
     ----------
     host : str
-        The host where the hhj server is located.
+        The host where the db server is located.
     password : str
-        The password used to authenticate with the hhj.
+        The password used to authenticate with the db.
     user : str
-        The username used to authenticate with the hhj.
+        The username used to authenticate with the db.
     database : str
-        The name of the hhj.
+        The name of the db.
     port : int
-        The port where the hhj server is listening.
+        The port where the db server is listening.
     """
 
     host: str
@@ -31,13 +31,15 @@ class DbConfig:
     database: str
     port: int = 5432
 
-    def construct_sqlalchemy_url(self, driver="asyncpg", host=None, port=None) -> str:
+    def construct_sqlalchemy_url(
+        self, driver: str = "asyncpg", host: str = None, port: int = None
+    ) -> str:
         """
         Constructs and returns a SQLAlchemy URL for this hhj configuration.
 
         :param driver: The name of the hhj driver (default is "asyncpg").
         :param host: The host for the connection.
-        :param port: The host for the connection.
+        :param port: The port for the connection.
         :return: A SQLAlchemy hhj connection URL as a string.
         """
         if not host:
@@ -60,13 +62,13 @@ class DbConfig:
         Creates a database configuration object.
 
         :param env: An Env object containing environment settings.
-        :return: A hhj configuration object.
+        :return: A database configuration object.
         """
-        host = env.str("DB_HOST")
+        host = env.str("POSTGRES_HOST")
         password = env.str("POSTGRES_PASSWORD")
         user = env.str("POSTGRES_USER")
         database = env.str("POSTGRES_DB")
-        port = env.int("DB_PORT", 5432)
+        port = env.int("POSTGRES_PORT", 5432)
         return DbConfig(
             host=host, password=password, user=user, database=database, port=port
         )
@@ -82,13 +84,30 @@ class TgBot:
     ----------
     token : str
         The token received from BotFather.
+    youth_policy: str
+        The string representing the youth policy chat id.
+    psychologist_support: str
+        The string representing the psychologist_support chat id.
+    legal_support: str
+        The string representing the legal_support chat id.
+    civic_education: str
+        The string representing the civic_education chat id.
+    super_admin: int
+        The
+    admins: List[int]
+        A list of user IDs representing the administrators of the bot.
+    all_groups: List[int]
+        A list of group chat IDs that the bot is connected to.
+    use_redis: bool
+        A boolean indicating whether the bot should use Redis for storage.
     """
 
     token: str
-    youth_policy: str
-    psychologist_support: str
-    civic_education: str
-    legal_support: str
+    youth_policy: int
+    psychologist_support: int
+    legal_support: int
+    civic_education: int
+    super_admin: int
     admins: List[int]
     all_groups: List[int]
     use_redis: bool
@@ -102,10 +121,11 @@ class TgBot:
         :return: A Telegram bot configuration object.
         """
         token = env.str("BOT_TOKEN")
-        youth_policy = env.str("YOUTH_POLICY")
-        psychologist_support = env.str("PSYCHOLOGIST_SUPPORT")
-        civic_education = env.str("CIVIC_EDUCATION")
-        legal_support = env.str("LEGAL_SUPPORT")
+        youth_policy = env.int("YOUTH_POLICY")
+        psychologist_support = env.int("PSYCHOLOGIST_SUPPORT")
+        legal_support = env.int("LEGAL_SUPPORT")
+        civic_education = env.int("CIVIC_EDUCATION")
+        super_admin = env.int("SUPER_ADMIN")
         admins = list(map(int, env.list("ADMINS")))
         all_groups = list(map(int, env.list("GROUPS")))
         use_redis = env.bool("USE_REDIS")
@@ -113,8 +133,9 @@ class TgBot:
             token=token,
             youth_policy=youth_policy,
             psychologist_support=psychologist_support,
-            civic_education=civic_education,
             legal_support=legal_support,
+            civic_education=civic_education,
+            super_admin=super_admin,
             admins=admins,
             all_groups=all_groups,
             use_redis=use_redis,
@@ -134,8 +155,8 @@ class RedisConfig:
         The host where Redis server is located.
     """
 
-    redis_port: int
-    redis_host: str
+    redis_port: Optional[int]
+    redis_host: Optional[str]
 
     def dsn(self) -> str:
         """

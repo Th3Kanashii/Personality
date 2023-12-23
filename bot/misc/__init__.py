@@ -1,4 +1,7 @@
-from .get_album import get_album
+from .send_post import send_post
 from .states import States
 
-__all__ = ["States", "get_album"]
+__all__: list[str] = [
+    "States",
+    "send_post",
+]
