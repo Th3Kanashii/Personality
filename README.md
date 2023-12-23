@@ -1,3 +1,12 @@
+# Personality
+
+Personality is a Telegram bot created to provide support and useful
+knowledge aimed at your personal development and adaptation in the modern
+society.
+There are four key areas, and by choosing each of them, you will discover
+the opportunity to receive information and ask questions
+to our qualified volunteer experts.
+
 # Deployment
 
 ## Via Docker
