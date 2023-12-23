@@ -6,4 +6,5 @@ cache/
 *.ini
 *.log
 *.pyc
+*.pdf
 .idea/

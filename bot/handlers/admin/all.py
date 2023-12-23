@@ -1,7 +1,7 @@
 import asyncio
 from typing import Final, List
 
-from aiogram import Bot, Router, html, types
+from aiogram import Bot, Router, types
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import Command
 

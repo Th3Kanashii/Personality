@@ -2,7 +2,7 @@ import asyncio
 import json
 import uuid
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import aiofiles
 from aiogram import Bot, html, types
@@ -36,7 +36,7 @@ async def send_post(
     :param: cache: (Optional) LRUCache for caching data to improve performance.
                    Defaults to None.
     """
-    category_mapping: Dict[str, Dict[str, any]] = {
+    category_mapping: Dict[str, Dict[str, Any]] = {
         "Особистість / Молодіжна політика": {
             "category": 4,
             "label": "Молодіжна політика 📚",
