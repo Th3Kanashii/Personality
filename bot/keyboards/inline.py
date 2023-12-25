@@ -1,11 +1,9 @@
-from functools import lru_cache
 from typing import Literal
 
 from aiogram.types import ChatMemberMember, InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 
-@lru_cache
 def url_subscription(member: ChatMemberMember) -> InlineKeyboardMarkup:
     """
     Generates an inline keyboard with a subscription link.
