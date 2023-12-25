@@ -1,11 +1,9 @@
 import asyncio
 import logging
-from typing import Union
 
 from aiogram import Bot, Dispatcher
 from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
-from aiogram.fsm.storage.redis import DefaultKeyBuilder, RedisStorage
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
@@ -66,27 +64,10 @@ def setup_logging() -> None:
     )
 
 
-def get_storage(config: Config) -> Union[MemoryStorage, RedisStorage]:
-    """
-    Return storage based on the provided configuration.
-
-    :param config: The configuration object from the loaded configuration.
-    :return: The storage object based on the configuration.
-    """
-    if config.tg_bot.use_redis:
-        return RedisStorage.from_url(
-            config.redis.dsn(),
-            key_builder=DefaultKeyBuilder(with_bot_id=True, with_destiny=True),
-        )
-    else:
-        return MemoryStorage()
-
-
 async def main() -> None:
     setup_logging()
 
     config: Config = load_config(path=".env")
-    storage: Union[RedisStorage, MemoryStorage] = get_storage(config=config)
 
     engine: AsyncEngine = create_async_engine(
         url=config.db.construct_sqlalchemy_url(), echo=True
@@ -96,11 +77,16 @@ async def main() -> None:
     )
 
     bot: Bot = Bot(token=config.tg_bot.token, parse_mode=ParseMode.HTML)
-    dp: Dispatcher = Dispatcher(storage=storage)
+    dp: Dispatcher = Dispatcher(storage=MemoryStorage())
 
     scheduler: AsyncIOScheduler = AsyncIOScheduler()
     scheduler.add_job(
-        func=schedule_post, args=(bot, session_maker), trigger="cron", second=5
+        func=schedule_post,
+        args=(bot, session_maker),
+        trigger="cron",
+        hour=12,
+        minute=0,
+        second=0,
     )
 
     dp.include_routers(*get_routers())

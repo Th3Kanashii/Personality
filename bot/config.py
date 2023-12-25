@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List
 
 from environs import Env
 from sqlalchemy.engine.url import URL
@@ -98,8 +98,6 @@ class TgBot:
         A list of user IDs representing the administrators of the bot.
     all_groups: List[int]
         A list of group chat IDs that the bot is connected to.
-    use_redis: bool
-        A boolean indicating whether the bot should use Redis for storage.
     """
 
     token: str
@@ -110,7 +108,6 @@ class TgBot:
     super_admin: int
     admins: List[int]
     all_groups: List[int]
-    use_redis: bool
 
     @staticmethod
     def from_env(env: Env):
@@ -128,7 +125,6 @@ class TgBot:
         super_admin = env.int("SUPER_ADMIN")
         admins = list(map(int, env.list("ADMINS")))
         all_groups = list(map(int, env.list("GROUPS")))
-        use_redis = env.bool("USE_REDIS")
         return TgBot(
             token=token,
             youth_policy=youth_policy,
@@ -138,44 +134,7 @@ class TgBot:
             super_admin=super_admin,
             admins=admins,
             all_groups=all_groups,
-            use_redis=use_redis,
         )
-
-
-@dataclass
-class RedisConfig:
-    """
-    Redis configuration class.
-
-    Attributes
-    ----------
-    redis_port : Optional(int)
-        The port where Redis server is listening.
-    redis_host : Optional(str)
-        The host where Redis server is located.
-    """
-
-    redis_port: Optional[int]
-    redis_host: Optional[str]
-
-    def dsn(self) -> str:
-        """
-        Constructs and returns a Redis DSN (Data Source Name) for this redis configuration.
-        """
-        return f"redis://{self.redis_host}:{self.redis_port}/0"
-
-    @staticmethod
-    def from_env(env: Env):
-        """
-        Creates the RedisConfig object from environment variables.
-
-        :param env: An Env object containing environment settings.
-        :return: A redis configuration object.
-        """
-        redis_port = env.int("REDIS_PORT")
-        redis_host = env.str("REDIS_HOST")
-
-        return RedisConfig(redis_port=redis_port, redis_host=redis_host)
 
 
 @dataclass
@@ -190,13 +149,10 @@ class Config:
         The Telegram bot configuration object
     db: DbConfig
         The db configuration object
-    redis: RedisConfig
-        The Redis configuration object
     """
 
     tg_bot: TgBot
     db: DbConfig
-    redis: RedisConfig
 
 
 def load_config(path: str = None) -> Config:
@@ -211,5 +167,4 @@ def load_config(path: str = None) -> Config:
     return Config(
         tg_bot=TgBot.from_env(env),
         db=DbConfig.from_env(env),
-        redis=RedisConfig.from_env(env),
     )
