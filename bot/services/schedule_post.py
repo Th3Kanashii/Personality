@@ -21,7 +21,7 @@ async def schedule_post(bot: Bot, session_maker: async_sessionmaker) -> None:
     session: AsyncSession
     file_path: Path = Path("/root/Personality/data/data.json")
     id_users: Set = set()
-    category_mapping: Dict[str, str] = {
+    category_mapping: Dict[int, str] = {
         4: "Молодіжна політика 📚",
         5: "Підтримка психолога 🧘",
         6: "Громадянська освіта 🏛",
