@@ -1,28 +1,38 @@
-from typing import Final, List
+from typing import List
 
-from aiogram import F, Router
+from aiogram import Router
+
+from bot.middlewares import (
+    AlbumMiddleware,
+    RegisterUserMiddleware,
+    ThrottlingMiddleware,
+    TopicMiddleware,
+)
 
 from . import from_user, start, subscription
 
 
-def get_user_router() -> Router:
+def get_user_routers() -> List[Router]:
     """
-    Create and configure a user-specific router.
+    Get a list of routers with user filters and specific middlewares.
 
-    :return: A Router object for user interactions.
+    :return: A list of routers with user filters and middleware applied.
     """
-    user_router: Final[Router] = Router(name=__name__)
-    user_router.message.filter(F.chat.type == "private")
+    start.router.message.middleware(RegisterUserMiddleware())
+    start.router.message.middleware(ThrottlingMiddleware(limit=3))
+    from_user.router.message.middleware(AlbumMiddleware())
+    from_user.router.message.middleware(ThrottlingMiddleware())
+    from_user.router.message.middleware(TopicMiddleware())
+
     routers_list: List[Router] = [
         start.router,
         subscription.router,
         from_user.router,
     ]
-    user_router.include_routers(*routers_list)
 
-    return user_router
+    return routers_list
 
 
 __all__: list[str] = [
-    "get_user_router",
+    "get_user_routers",
 ]

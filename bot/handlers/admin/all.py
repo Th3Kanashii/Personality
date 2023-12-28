@@ -6,10 +6,8 @@ from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import Command
 
 from bot.database import RequestsRepo
-from bot.filters import Admin
 
 router: Final[Router] = Router(name=__name__)
-router.message.filter(Admin())
 
 
 @router.message(Command("all", prefix="!"))

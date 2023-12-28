@@ -3,14 +3,7 @@ from typing import Final, List, Optional
 from aiogram import Bot, Router, html
 from aiogram.types import Message
 
-from bot.filters import Admin
-from bot.middlewares import AlbumMiddleware, UserIdMiddleware
-
 router: Final[Router] = Router(name=__name__)
-router.message.filter(Admin(command=False))
-
-router.message.middleware(AlbumMiddleware())
-router.message.middleware(UserIdMiddleware())
 
 
 @router.message()

@@ -9,12 +9,10 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from cachetools import LRUCache
 
 from bot.database import RequestsRepo
-from bot.filters import Admin
 from bot.keyboards import cancel_post, cancel_scheduler
 from bot.misc import States, send_post
 
 router: Final[Router] = Router(name=__name__)
-router.message.filter(Admin())
 
 
 def scheduled_post(cache: LRUCache) -> str:

@@ -4,10 +4,7 @@ from aiogram import Router
 from aiogram.filters import Command
 from aiogram.types import FSInputFile, Message
 
-from bot.filters import Admin
-
 router: Final[Router] = Router(name=__name__)
-router.message.filter(Admin())
 
 
 @router.message(Command("help"))

@@ -1,9 +1,9 @@
-from typing import List
+from typing import Final, List
 
-from aiogram import Router
+from aiogram import F, Router
 
-from .admin import get_admin_router
-from .user import get_user_router
+from .admin import get_admin_routers
+from .user import get_user_routers
 
 
 def get_routers() -> List[Router]:
@@ -12,8 +12,13 @@ def get_routers() -> List[Router]:
 
     :return: A list of Router objects for all interactions.
     """
-    admin_router: Router = get_admin_router()
-    user_router: Router = get_user_router()
+    admin_router: Final[Router] = Router(name=__name__)
+    admin_router.message.filter(F.chat.type != "private")
+    admin_router.include_routers(*get_admin_routers())
+
+    user_router: Final[Router] = Router(name=__name__)
+    user_router.message.filter(F.chat.type == "private")
+    user_router.include_routers(*get_user_routers())
 
     return [
         admin_router,
@@ -21,4 +26,6 @@ def get_routers() -> List[Router]:
     ]
 
 
-__all__: list[str] = ["get_routers"]
+__all__: list[str] = [
+    "get_routers",
+]

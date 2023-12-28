@@ -4,14 +4,10 @@ from aiogram import Router, types
 from aiogram.filters import CommandStart
 
 from bot.keyboards import start
-from bot.middlewares import RegisterUserMiddleware, ThrottlingMiddleware
 
 flags: Final[Dict[str, str]] = {"throttling_key": "default"}
 
 router: Final[Router] = Router(name=__name__)
-
-router.message.middleware(RegisterUserMiddleware())
-router.message.middleware(ThrottlingMiddleware(limit=3))
 
 
 @router.message(CommandStart(), flags=flags)

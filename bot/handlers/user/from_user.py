@@ -3,15 +3,9 @@ from typing import Dict, Final, List, Optional
 from aiogram import Bot, Router
 from aiogram.types import Message
 
-from bot.middlewares import AlbumMiddleware, ThrottlingMiddleware, TopicMiddleware
-
 flags: Final[Dict[str, str]] = {"throttling_key": "default"}
 
 router: Final[Router] = Router(name=__name__)
-
-router.message.middleware(AlbumMiddleware())
-router.message.middleware(ThrottlingMiddleware())
-router.message.middleware(TopicMiddleware())
 
 
 @router.message(flags=flags)
